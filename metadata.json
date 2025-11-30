@@ -1,0 +1,5 @@
+{
+  "name": "Real Time  Stock Pricing",
+  "description": "A real-time styled stock market dashboard. Features like AI sentiment analysis, and dynamic charting visualization.",
+  "requestFramePermissions": []
+}
