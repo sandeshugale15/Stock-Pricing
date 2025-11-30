@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, BarChart2, LogIn, LogOut, User as UserIcon, Menu } from 'lucide-react';
+import { Search, Loader2, BarChart2, LogIn, LogOut, User as UserIcon, Menu, TrendingUp } from 'lucide-react';
 import { searchStock } from './services/gemini';
 import StockDisplay from './components/StockDisplay';
 import NewsFeed from './components/NewsFeed';
@@ -7,6 +7,21 @@ import WatchlistSidebar from './components/WatchlistSidebar';
 import AuthModal from './components/AuthModal';
 import { AnalysisResult } from './types';
 import { useAuth } from './context/AuthContext';
+
+const POPULAR_STOCKS = [
+  { symbol: 'RELIANCE', name: 'Reliance Industries' },
+  { symbol: 'TCS', name: 'Tata Consultancy Svcs' },
+  { symbol: 'HDFCBANK', name: 'HDFC Bank' },
+  { symbol: 'ICICIBANK', name: 'ICICI Bank' },
+  { symbol: 'INFY', name: 'Infosys' },
+  { symbol: 'SBIN', name: 'State Bank of India' },
+  { symbol: 'TATAMOTORS', name: 'Tata Motors' },
+  { symbol: 'BHARTIARTL', name: 'Bharti Airtel' },
+  { symbol: 'ITC', name: 'ITC Limited' },
+  { symbol: 'LT', name: 'Larsen & Toubro' },
+  { symbol: 'BAJFINANCE', name: 'Bajaj Finance' },
+  { symbol: 'MARUTI', name: 'Maruti Suzuki' },
+];
 
 function App() {
   const [query, setQuery] = useState('');
@@ -86,7 +101,7 @@ function App() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search ticker (e.g. AAPL)..."
+              placeholder="Search ticker (e.g. TATASTEEL)..."
               className="w-full bg-gray-900/50 border border-gray-700 text-gray-200 pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all placeholder:text-gray-600"
             />
             <Search className="absolute left-3 top-2.5 text-gray-500 w-5 h-5" />
@@ -143,36 +158,67 @@ function App() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto w-full p-4 md:p-6 lg:p-8 custom-scrollbar">
-          {loading ? (
-            <div className="h-full flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-              <p className="text-gray-400 animate-pulse font-medium">Analyzing market data with Gemini...</p>
-            </div>
-          ) : error ? (
-            <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto">
-              <div className="bg-red-500/10 p-4 rounded-full mb-4">
-                <BarChart2 className="w-8 h-8 text-red-500" />
+          <div className="min-h-[calc(100vh-250px)]">
+            {loading ? (
+              <div className="h-96 flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+                <p className="text-gray-400 animate-pulse font-medium">Analyzing market data with Gemini...</p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Search Failed</h3>
-              <p className="text-gray-400">{error}</p>
-            </div>
-          ) : data && data.stockData ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column: Stock Data & Chart */}
-              <div className="lg:col-span-2 space-y-6">
-                <StockDisplay data={data.stockData} isSimulating={true} />
+            ) : error ? (
+              <div className="h-96 flex flex-col items-center justify-center text-center max-w-md mx-auto">
+                <div className="bg-red-500/10 p-4 rounded-full mb-4">
+                  <BarChart2 className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Search Failed</h3>
+                <p className="text-gray-400">{error}</p>
               </div>
+            ) : data && data.stockData ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column: Stock Data & Chart */}
+                <div className="lg:col-span-2 space-y-6">
+                  <StockDisplay data={data.stockData} isSimulating={true} />
+                </div>
 
-              {/* Right Column: News Feed */}
-              <div className="lg:col-span-1">
-                <NewsFeed news={data.news} />
+                {/* Right Column: News Feed */}
+                <div className="lg:col-span-1">
+                  <NewsFeed news={data.news} />
+                </div>
               </div>
+            ) : (
+              <div className="h-96 flex flex-col items-center justify-center text-gray-500">
+                 <div className="bg-gray-800/50 p-6 rounded-full mb-6">
+                    <TrendingUp className="w-16 h-16 text-indigo-500/50" />
+                 </div>
+                 <h2 className="text-2xl font-bold text-white mb-2">Market Intelligence</h2>
+                 <p className="text-gray-400 max-w-md text-center">
+                   Enter a symbol above to view real-time pricing, sentiment analysis, and breaking news powered by Gemini.
+                 </p>
+              </div>
+            )}
+          </div>
+
+          {/* Popular Stocks Section */}
+          <div className="mt-12 border-t border-gray-800 pt-8 pb-4">
+            <h3 className="text-lg font-semibold text-gray-300 mb-4 px-1 flex items-center gap-2">
+              <TrendingUp size={18} className="text-indigo-400" />
+              Popular Indian Stocks
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {POPULAR_STOCKS.map((stock) => (
+                <button
+                  key={stock.symbol}
+                  onClick={() => performSearch(stock.symbol)}
+                  className="flex flex-col items-start p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800 border border-gray-700/50 hover:border-indigo-500/50 transition-all text-left group"
+                >
+                  <div className="flex items-center justify-between w-full mb-1">
+                     <span className="font-bold text-gray-200 group-hover:text-indigo-400">{stock.symbol}</span>
+                     <span className="text-[10px] font-bold tracking-wider text-gray-600 group-hover:text-indigo-500/70 opacity-0 group-hover:opacity-100 transition-opacity">VIEW</span>
+                  </div>
+                  <span className="text-xs text-gray-500 truncate w-full">{stock.name}</span>
+                </button>
+              ))}
             </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-gray-500">
-               <p>Enter a stock symbol to begin analysis.</p>
-            </div>
-          )}
+          </div>
         </main>
       </div>
     </div>
